@@ -188,9 +188,29 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
     };
   }, [localTodos]);
 
+  //* 객체의 문자열 인덱스 사용을 위한 타입
+  type ObjectIndexType = {
+    [key: string]: number | undefined;
+  };
+
+  //* 색깔 객체 구하기 2
+  const todoColorNums = useMemo(() => {
+    const colors: ObjectIndexType = {};
+    localTodos.forEach((todo) => {
+      const value = colors[todo.color];
+      if (!value) {
+        //* 존재하지않던 key라면
+        colors[`${todo.color}`] = 1;
+      } else {
+        //* 존재하는 키라면
+        colors[`${todo.color}`] = value + 1;
+      }
+    });
+    return colors;
+  }, [localTodos]);
+
   // ? useMemo와 useCallback을 사용하는 게 꼭 좋은 것만은 아님
   // ? 값의 변화를 비교 하게 되고, 배열을 생성하여 사용하는 만큼 메모리를 사용하기 때문에 이러한 비용이 재연산하는 비용보다 클 수 있기 때문
-  const todoColorNums = useMemo(getTodoColorNums, [localTodos]);
 
   // ? 재계산 방지를 통한 성능 개선, useMemo와 useCallback
 
@@ -231,11 +251,10 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
       <Container>
         <div className="todo-list-header">
           <p className="todo-list-last-todo">
-            남은 TODO <span>{localTodos.length}개</span>
+            남은 할 일<span>{localTodos.length}개</span>
           </p>
 
           <div className="todo-list-header-colors">
-            {/* Object.keys()를 활용하여 객체의 키값을 배열로 얻어옴, keys 배열을 map함수를 통해 색깔과 개수를 리턴 후 백틱문법을 통해 색상 표현 */}
             {Object.keys(todoColorNums).map((color, index) => (
               <div className="todo-list-header-color-num" key={index}>
                 <div className={`todo-list-header-round-color bg-${color}`} />
