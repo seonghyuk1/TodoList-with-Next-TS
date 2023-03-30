@@ -1,10 +1,12 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
 import palette from "../styles/palette";
 import { TodoType } from "../types/todo";
 
 import TrashCanIcon from "../public/statics/svg/trash.svg";
 import CheckIcon from "../public/statics//svg/check.svg";
+
+import { checkTodoAPI, deleteTodoAPI } from "../lib/api/todo";
 
 // 인터페이스를 활용하여 타입 지정
 // export를 하지 않는 타입에 대해서는 interface를 사용하는 것을 선호 : 그렇기에 props 타입에 대해선 interface를 사용
@@ -116,16 +118,16 @@ const Container = styled.div`
     }
 
     .todo-trash-can {
-      width: 16px;
-      height: 16px;
+      width: 24px;
+      height: 24px;
       path {
         fill: ${palette.deep_red};
       }
     }
     .todo-check-mark {
       fill: ${palette.deep_green};
-      width: 16px;
-      height: 16px;
+      width: 24px;
+      height: 24px;
     }
     .todo-button {
       width: 20px;
@@ -134,11 +136,14 @@ const Container = styled.div`
       border: 1px solid ${palette.gray};
       background-color: transparent;
       outline: none;
+      margin-right: 10px;
     }
   }
 `;
 
 const TodoList: React.FC<IProps> = ({ todos }) => {
+  const [localTodos, setLocalTodos] = useState(todos);
+
   // * 객체 별 색 카운트
   // ? useMemo는 특정 결과값을 재사용하고 싶을 때 사용하고, useCallback은 특정 함수를 새로 만들지 않고 재사용 하고 싶을 때
   const getTodoColorNums = useCallback(() => {
@@ -148,7 +153,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
     let green = 0;
     let blue = 0;
     let navy = 0;
-    todos.forEach((todo) => {
+    localTodos.forEach((todo) => {
       if (todo.color === "red") {
         red += 1;
       }
@@ -181,41 +186,52 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
       blue,
       navy,
     };
-  }, [todos]);
-
-  // * 객체별 존재하지 않는 색 카운트
-  type ObjectIndexType = {
-    // 이렇게 두 가지 타입지정을 해주지 않는다면 대괄호 표기법에서 에러가 나옴
-    [key: string]: number | undefined;
-  };
-
-  const todoColorNums2 = useMemo(() => {
-    const colors: ObjectIndexType = {};
-    todos.forEach((todo) => {
-      const value = colors[todo.color];
-      if (!value) {
-        // 존재하지 않는 키라면 1로 고정
-        colors[`${todo.color}`] = 1;
-      } else {
-        // 존재한다면 원래 값 +1
-        colors[`${todo.color}`] = value + 1;
-      }
-    });
-    return colors;
-  }, [todos]);
+  }, [localTodos]);
 
   // ? useMemo와 useCallback을 사용하는 게 꼭 좋은 것만은 아님
   // ? 값의 변화를 비교 하게 되고, 배열을 생성하여 사용하는 만큼 메모리를 사용하기 때문에 이러한 비용이 재연산하는 비용보다 클 수 있기 때문
-  const todoColorNums = useMemo(getTodoColorNums, [todos]);
+  const todoColorNums = useMemo(getTodoColorNums, [localTodos]);
 
   // ? 재계산 방지를 통한 성능 개선, useMemo와 useCallback
+
+  // * 투두 체크하기
+  const checkTodo = async (id: number) => {
+    try {
+      await checkTodoAPI(id);
+
+      // 체크 할 때 바뀐 todo를 state를 통해 할당
+      const newTodos = localTodos.map((todo) => {
+        if (todo.id === id) {
+          return { ...todo, checked: !todo.checked };
+        }
+
+        return todo;
+      });
+      setLocalTodos(newTodos);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  // * 투두 삭제하기
+  const deleteTodo = async (id: number) => {
+    try {
+      await deleteTodoAPI(id);
+      const newTodos = localTodos.filter((todo) => todo.id !== id);
+      setLocalTodos(newTodos);
+
+      console.log("삭제 완료");
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
     <>
       <Container>
         <div className="todo-list-header">
           <p className="todo-list-last-todo">
-            남은 TODO <span>{todos.length}개</span>
+            남은 TODO <span>{localTodos.length}개</span>
           </p>
 
           <div className="todo-list-header-colors">
@@ -230,7 +246,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
         </div>
 
         <ul className="todo-list">
-          {todos.map((todo) => (
+          {Array.from(localTodos).map((todo) => (
             <li className="todo-item" key={todo.id}>
               <div className="todo-left-side">
                 {/* 백틱을 사용하여 배경색 맞추기  */}
@@ -240,15 +256,33 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
               </div>
 
               <div className="todo-right-side">
-                {" "}
                 {todo.checked && (
                   <>
-                    <TrashCanIcon className="todo-trash-can" onClick={() => {}} />
+                    <TrashCanIcon
+                      className="todo-trash-can"
+                      onClick={() => {
+                        deleteTodo(todo.id);
+                      }}
+                    />
 
-                    <CheckIcon className="todo-check-mark" onClick={() => {}} />
+                    <CheckIcon
+                      className="todo-check-mark"
+                      onClick={() => {
+                        checkTodo(todo.id);
+                      }}
+                    />
                   </>
                 )}
-                {!todo.checked && <button type="button" className="todo-button" onClick={() => {}} />}
+
+                {!todo.checked && (
+                  <button
+                    type="button"
+                    className="todo-button"
+                    onClick={() => {
+                      checkTodo(todo.id);
+                    }}
+                  />
+                )}
               </div>
             </li>
           ))}
