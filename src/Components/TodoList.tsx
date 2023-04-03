@@ -144,49 +144,49 @@ const Container = styled.div`
 const TodoList: React.FC<IProps> = ({ todos }) => {
   const [localTodos, setLocalTodos] = useState(todos);
 
-  // * 객체 별 색 카운트
-  // ? useMemo는 특정 결과값을 재사용하고 싶을 때 사용하고, useCallback은 특정 함수를 새로 만들지 않고 재사용 하고 싶을 때
-  const getTodoColorNums = useCallback(() => {
-    let red = 0;
-    let orange = 0;
-    let yellow = 0;
-    let green = 0;
-    let blue = 0;
-    let navy = 0;
-    localTodos.forEach((todo) => {
-      if (todo.color === "red") {
-        red += 1;
-      }
+  // // * 객체 별 색 카운트
+  // ! useMemo는 특정 결과값을 재사용하고 싶을 때 사용하고, useCallback은 특정 함수를 새로 만들지 않고 재사용 하고 싶을 때
+  // const getTodoColorNums = useCallback(() => {
+  //   let red = 0;
+  //   let orange = 0;
+  //   let yellow = 0;
+  //   let green = 0;
+  //   let blue = 0;
+  //   let navy = 0;
+  //   localTodos.forEach((todo) => {
+  //     if (todo.color === "red") {
+  //       red += 1;
+  //     }
 
-      if (todo.color === "orange") {
-        orange += 1;
-      }
+  //     if (todo.color === "orange") {
+  //       orange += 1;
+  //     }
 
-      if (todo.color === "yellow") {
-        yellow += 1;
-      }
+  //     if (todo.color === "yellow") {
+  //       yellow += 1;
+  //     }
 
-      if (todo.color === "green") {
-        green += 1;
-      }
+  //     if (todo.color === "green") {
+  //       green += 1;
+  //     }
 
-      if (todo.color === "blue") {
-        blue += 1;
-      }
+  //     if (todo.color === "blue") {
+  //       blue += 1;
+  //     }
 
-      if (todo.color === "navy") {
-        navy += 1;
-      }
-    });
-    return {
-      red,
-      orange,
-      yellow,
-      green,
-      blue,
-      navy,
-    };
-  }, [localTodos]);
+  //     if (todo.color === "navy") {
+  //       navy += 1;
+  //     }
+  //   });
+  //   return {
+  //     red,
+  //     orange,
+  //     yellow,
+  //     green,
+  //     blue,
+  //     navy,
+  //   };
+  // }, [localTodos]);
 
   //* 객체의 문자열 인덱스 사용을 위한 타입
   type ObjectIndexType = {

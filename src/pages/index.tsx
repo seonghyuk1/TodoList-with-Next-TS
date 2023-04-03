@@ -3,6 +3,7 @@ import { GetServerSideProps, NextPage } from "next";
 import React from "react";
 import { TodoType } from "../types/todo";
 import { getTodosAPI } from "@/lib/api/todo";
+import { wrapper } from "../store";
 
 interface IProps {
   todos: TodoType[];
@@ -26,5 +27,16 @@ export const getServerSideProps: GetServerSideProps = async () => {
     return { props: { todos: [] } };
   }
 };
+
+// export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) => {
+//   console.log(store);
+//   try {
+//     const { data } = await getTodosAPI();
+//     return { props: { todos: data } };
+//   } catch (e) {
+//     console.log(e);
+//     return { props: { todos: [] } };
+//   }
+// });
 
 export default app;

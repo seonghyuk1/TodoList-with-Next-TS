@@ -2,8 +2,9 @@ import Header from "../Components/Header";
 import type { AppProps } from "next/app";
 import GlobalStyle from "../styles/GlobalStyle";
 import Footer from "@/Components/Footer";
+import { wrapper } from "../store";
 
-export default function App({ Component, pageProps }: AppProps) {
+const app = ({ Component, pageProps }: AppProps) => {
   return (
     <>
       <GlobalStyle />
@@ -12,4 +13,6 @@ export default function App({ Component, pageProps }: AppProps) {
       <Footer />
     </>
   );
-}
+};
+
+export default wrapper.withRedux(app);
