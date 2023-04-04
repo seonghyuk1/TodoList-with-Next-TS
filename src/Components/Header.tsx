@@ -17,7 +17,7 @@ const Container = styled.div`
 const Header: React.FC = () => {
   return (
     <Container>
-      <h1>Seonghyeok`s TodoList</h1>
+      <h1>당신을 위한 TodoList</h1>
     </Container>
   );
 };

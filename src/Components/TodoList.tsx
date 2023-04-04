@@ -8,11 +8,19 @@ import CheckIcon from "../public/statics//svg/check.svg";
 
 import { checkTodoAPI, deleteTodoAPI } from "../lib/api/todo";
 
+// useSeletor를 활용한 덕스 스토어 접근
+// import { useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { useSelector } from "../store";
+
+import { todoActions } from "@/store/todo";
+import { useDispatch } from "react-redux";
+
 // 인터페이스를 활용하여 타입 지정
 // export를 하지 않는 타입에 대해서는 interface를 사용하는 것을 선호 : 그렇기에 props 타입에 대해선 interface를 사용
-interface IProps {
-  todos: TodoType[];
-}
+// interface IProps {
+//   todos: TodoType[];
+// }
 
 // className 활용 스타일링
 const Container = styled.div`
@@ -141,8 +149,12 @@ const Container = styled.div`
   }
 `;
 
-const TodoList: React.FC<IProps> = ({ todos }) => {
-  const [localTodos, setLocalTodos] = useState(todos);
+const TodoList: React.FC = () => {
+  // 기존 useState를 통해 API로 받아오던 것을 useSelector로 변경
+  // const [localTodos, setLocalTodos] = useState(todos);
+  const todos = useSelector((state) => state.todo.todos);
+
+  const dispatch = useDispatch();
 
   // // * 객체 별 색 카운트
   // ! useMemo는 특정 결과값을 재사용하고 싶을 때 사용하고, useCallback은 특정 함수를 새로 만들지 않고 재사용 하고 싶을 때
@@ -196,7 +208,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
   //* 색깔 객체 구하기 2
   const todoColorNums = useMemo(() => {
     const colors: ObjectIndexType = {};
-    localTodos.forEach((todo) => {
+    todos.forEach((todo) => {
       const value = colors[todo.color];
       if (!value) {
         //* 존재하지않던 key라면
@@ -207,7 +219,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
       }
     });
     return colors;
-  }, [localTodos]);
+  }, [todos]);
 
   // ? useMemo와 useCallback을 사용하는 게 꼭 좋은 것만은 아님
   // ? 값의 변화를 비교 하게 되고, 배열을 생성하여 사용하는 만큼 메모리를 사용하기 때문에 이러한 비용이 재연산하는 비용보다 클 수 있기 때문
@@ -220,14 +232,15 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
       await checkTodoAPI(id);
 
       // 체크 할 때 바뀐 todo를 state를 통해 할당
-      const newTodos = localTodos.map((todo) => {
+      const newTodos = todos.map((todo) => {
         if (todo.id === id) {
           return { ...todo, checked: !todo.checked };
         }
 
         return todo;
       });
-      setLocalTodos(newTodos);
+      dispatch(todoActions.setTodo(newTodos));
+      console.log("체크하였습니다.");
     } catch (e) {
       console.log(e);
     }
@@ -237,9 +250,8 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
   const deleteTodo = async (id: number) => {
     try {
       await deleteTodoAPI(id);
-      const newTodos = localTodos.filter((todo) => todo.id !== id);
-      setLocalTodos(newTodos);
-
+      const newTodos = todos.filter((todo) => todo.id !== id);
+      dispatch(todoActions.setTodo(newTodos));
       console.log("삭제 완료");
     } catch (e) {
       console.log(e);
@@ -251,7 +263,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
       <Container>
         <div className="todo-list-header">
           <p className="todo-list-last-todo">
-            남은 할 일<span>{localTodos.length}개</span>
+            남은 할 일<span>{todos.length}개</span>
           </p>
 
           <div className="todo-list-header-colors">
@@ -265,7 +277,7 @@ const TodoList: React.FC<IProps> = ({ todos }) => {
         </div>
 
         <ul className="todo-list">
-          {Array.from(localTodos).map((todo) => (
+          {Array.from(todos).map((todo) => (
             <li className="todo-item" key={todo.id}>
               <div className="todo-left-side">
                 {/* 백틱을 사용하여 배경색 맞추기  */}

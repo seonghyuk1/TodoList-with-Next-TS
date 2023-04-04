@@ -1,3 +1,4 @@
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { TodoType } from "../types/todo";
 
 // ? 3. 항상 npm-module-or-app/reducer/ACTION_TYPE 형태의 action 타입을 가져야함
@@ -13,8 +14,6 @@ export const setTodo = (payload: TodoType[]) => {
   };
 };
 
-export const todoActions = { setTodo };
-
 interface TodoReduxState {
   todos: TodoType[];
 }
@@ -29,40 +28,32 @@ const initialState: TodoReduxState = {
 // 리듀서는 만들어진 새로운 상태를 스토어로 업데이트하고 컴포넌트는 이 스토어를 구독 중
 // 스토어에 변화가 생기게 되면 그 상태를 전달받아 뷰를 변환시킬 수 있게 됨
 
-export default function reducer(state = initialState, action: any) {
-  switch (action.type) {
-    // case INIT_TODO_LIST:
-    case SET_TODO_LIST:
-      const newState = { ...state, todos: action.payload };
-      return newState;
-    default:
-      return state;
-  }
-}
-
-// import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-// import { TodoType } from "../types/todo";
-
-// interface TodoReduxState {
-//   todos: TodoType[];
+// pages/index로 부터 온 action의 payload
+// 생성된 액션 객체와 이전 상태는 리듀서로 전달되어, 다음과 같은 과정을 수행하게 되어 새로운 상태를 스토어로 업데이트
+// export default function reducer(state = initialState, action: any) {
+//   switch (action.type) {
+//     // case INIT_TODO_LIST:
+//     case INIT_TODO_LIST:
+//       const newState = { ...state, todos: action.payload };
+//       return newState;
+//     default:
+//       return state;
+//   }
 // }
 
-// //* 초기 상태
-// const initialState: TodoReduxState = {
-//   todos: [],
-// };
+const todo = createSlice({
+  name: "todo",
+  initialState,
+  reducers: {
+    setTodo(state, action: PayloadAction<TodoType[]>) {
+      state.todos = action.payload;
+    },
+  },
+});
 
-// const todo = createSlice({
-//   name: "todo",
-//   initialState,
-//   reducers: {
-//     //* 투두 변경하기
-//     setTodo(state, action: PayloadAction<TodoType[]>) {
-//       state.todos = action.payload;
-//     },
-//   },
-// });
+// 아래로 변경
+// export const todoActions = { setTodo };
+// 액션 생성자들을 모아놓은 것 다른 파일에서 디스패치 할 때 사용하도록 export
+export const todoActions = { ...todo.actions };
 
-// export const todoActions = { ...todo.actions };
-
-// export default todo;
+export default todo;
