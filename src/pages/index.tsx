@@ -10,12 +10,6 @@ interface IProps {
   todos: TodoType[];
 }
 
-// const app: NextPage<IProps> = () => {
-//   // 그냥 todos 쓰면 에러나는 이유는 TodoList 컴포넌트가 props로 todos를 받이골 되어 있지 않기 때문에 이러한 에러가 발생
-//   // TodoList가 props로 todos를 받을 수 있게 Todolist에서 설정
-//   return <TodoList />;
-// };
-
 const app: NextPage = () => {
   return <TodoList />;
 };
